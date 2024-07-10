@@ -2379,6 +2379,12 @@ a.activation-chip > i.mdi {
   .chat-message .lancer-damage-buttons & {
     width: fit-content;
     float: right;
+    display: flex;
+
+    & i {
+      margin: 0;
+      text-shadow: 0 0 1px black;
+    }
   }
 }
 
