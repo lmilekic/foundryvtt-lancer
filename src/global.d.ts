@@ -80,7 +80,7 @@ declare global {
       };
       "lancer.keepStockIcons": boolean;
       "lancer.hideWelcome": boolean;
-      "lancer.automationOptions": Partial<AutomationOptions>;
+      "lancer.automationOptions": AutomationOptions;
       "lancer.automationSwitch": boolean;
       "lancer.attackSwitch": boolean;
       "lancer.actionManager": boolean;
