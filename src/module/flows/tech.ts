@@ -10,6 +10,7 @@ import { resolveDotpath } from "../helpers/commons";
 import { ActivationType, AttackType } from "../enums";
 import { Flow, FlowState, Step } from "./flow";
 import { UUIDRef } from "../source-template";
+import { AttackFlag } from "./attack";
 
 const lp = LANCER.log_prefix;
 
@@ -179,14 +180,34 @@ export async function printTechAttackCard(
 ): Promise<boolean> {
   if (!state.data) throw new TypeError(`Tech attack flow state missing!`);
   const template = options?.template || `systems/${game.system.id}/templates/chat/tech-attack-card.hbs`;
-  const flags = {
+  const flags: { attackData: AttackFlag } = {
     attackData: {
-      origin: state.actor.id,
-      targets: state.data.attack_rolls.targeted.map(t => {
-        return { id: t.target.id, lockOnConsumed: !!t.usedLockOn };
+      origin: state.actor.id!,
+      attackerUuid: state.actor.uuid!,
+      attackerItemUuid: state.item?.uuid,
+      targets: state.data.hit_results.map(hr => {
+        return {
+          id: hr.token.actor?.uuid || hr.token.token?.actor?.uuid || "",
+          setConditions: !!hr.usedLockOn ? { lockon: !hr.usedLockOn } : undefined,
+          total: hr.total,
+          hit: hr.hit,
+          crit: hr.crit,
+        };
       }),
     },
   };
-  await renderTemplateStep(state.actor, template, state.data, flags);
+  const hitResultsWithRolls: LancerFlowState.HitResultWithRoll[] = [];
+  for (const [index, hitResult] of state.data.hit_results.entries()) {
+    hitResultsWithRolls.push({
+      ...hitResult,
+      ...state.data.attack_results[index],
+    });
+  }
+  const templateData = {
+    ...state.data,
+    hit_results: hitResultsWithRolls,
+    item_uuid: state.item?.uuid,
+  };
+  await renderTemplateStep(state.actor, template, templateData, flags);
   return true;
 }
